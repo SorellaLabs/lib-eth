@@ -47,9 +47,9 @@ impl AngstromL2Constants {
 }
 
 pub const ANGSTROM_L2_CONSTANTS_BASE_MAINNET: AngstromL2Constants = AngstromL2Constants {
-    angstrom_l2_factory:   address!("0x0000000000fd3b85c30f942e8d878e858e69cd05"),
-    hook_address_miner:    address!("0x1C9e501116879d6A6748582047eBcb8bbcCC7d53"),
-    angstrom_deploy_block: 43873127,
+    angstrom_l2_factory:   address!("0x00000000a9B8c6f8E2693CeF534e16ED414fC4a7"),
+    hook_address_miner:    address!("0xc45eF3ac50E1c1f97334eB6D1eF4e5D1b210eD97"),
+    angstrom_deploy_block: 51744392,
     chain_id:              8453,
     uniswap_constants:     UNISWAP_V4_CONSTANTS_BASE_MAINNET
 };
