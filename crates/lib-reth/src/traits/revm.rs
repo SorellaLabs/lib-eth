@@ -35,34 +35,28 @@ pub fn empty_mainnet_revm<DB: DatabaseRef>(
     evm
 }
 
-#[cfg(feature = "op-revm")]
-pub use op_impl::empty_op_mainnet_revm;
-#[cfg(feature = "op-revm")]
-pub use op_revm::OpTransaction;
+#[cfg(feature = "base-revm")]
+pub use base_common_evm::BaseTransaction;
+#[cfg(feature = "base-revm")]
+pub use base_impl::empty_base_mainnet_revm;
 
-#[cfg(feature = "op-revm")]
-mod op_impl {
-    use op_revm::{DefaultOp, L1BlockInfo, OpBuilder, OpEvm, OpSpecId, OpTransaction, precompiles::OpPrecompiles};
-    use revm::handler::EvmTr;
+#[cfg(feature = "base-revm")]
+mod base_impl {
+    use base_common_evm::{BaseEvm, Builder, DefaultBase};
 
     use super::*;
 
-    type OptimismRevmEvm<DB> = OpEvm<
-        NetworkRevmContext<DB, OpTransaction<TxEnv>, CfgEnv<OpSpecId>, L1BlockInfo>,
-        (),
-        EthInstructions<EthInterpreter, NetworkRevmContext<DB, OpTransaction<TxEnv>, CfgEnv<OpSpecId>, L1BlockInfo>>,
-        OpPrecompiles
-    >;
+    type BaseRevmEvm<DB> = BaseEvm<CacheDB<DB>, ()>;
 
-    pub fn empty_op_mainnet_revm<DB: DatabaseRef>(
+    pub fn empty_base_mainnet_revm<DB: DatabaseRef>(
         db: CacheDB<DB>,
         chain_id: ChainId,
         disable_nonce_check: bool
-    ) -> OptimismRevmEvm<DB> {
-        let mut evm = Context::op()
+    ) -> BaseRevmEvm<DB> {
+        let mut evm = Context::base()
             .modify_cfg_chained(|cfg| cfg.chain_id = chain_id)
             .with_db(db)
-            .build_op();
+            .build_base();
 
         if disable_nonce_check {
             evm.ctx_mut()

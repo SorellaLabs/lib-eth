@@ -1,21 +1,19 @@
 use std::sync::Arc;
 
 use alloy_primitives::U256;
+use base_common_rpc_types::BaseRpcTypes;
+use base_execution_chainspec::BaseChainSpec;
+use base_execution_evm::BaseEvmConfig;
+use base_execution_rpc::{
+    BaseEthApi, BaseTimeCache,
+    eth::{receipt::BaseReceiptConverter, transaction::BaseTxInfoMapper}
+};
+use base_execution_txpool::{BasePooledTransaction, BaseTransactionValidator};
+use base_node_core::BaseNode;
 use eth_network_exts::EthNetworkExt;
-use op_alloy_network::Optimism;
 use reth_db::{DatabaseEnv, open_db_read_only};
 use reth_network_api::noop::NoopNetwork;
 use reth_node_types::NodeTypesWithDBAdapter;
-use reth_optimism_chainspec::OpChainSpec;
-use reth_optimism_evm::OpEvmConfig;
-use reth_optimism_node::{
-    OpNode,
-    txpool::{OpPooledTransaction, OpTransactionValidator}
-};
-use reth_optimism_rpc::{
-    OpEthApi,
-    eth::{receipt::OpReceiptConverter, transaction::OpTxInfoMapper}
-};
 use reth_provider::{
     ProviderFactory,
     providers::{BlockchainProvider, RocksDBProvider, StaticFileProvider}
@@ -31,37 +29,34 @@ use reth_transaction_pool::{
 
 use crate::reth_libmdbx::{DbConfig, NodeClientSpec, RethNodeClient};
 
-type OpRethApi = OpEthApi<
-    RpcNodeCoreAdapter<OpRethDbProvider, OpRethTxPool, NoopNetwork, OpEvmConfig>,
+type BaseRethApi = BaseEthApi<
+    RpcNodeCoreAdapter<BaseRethDbProvider, BaseRethTxPool, NoopNetwork, BaseEvmConfig>,
     RpcConverter<
-        Optimism,
-        OpEvmConfig,
-        OpReceiptConverter<OpRethDbProvider>,
+        BaseRpcTypes,
+        BaseEvmConfig,
+        BaseReceiptConverter<BaseRethDbProvider>,
         (),
-        OpTxInfoMapper<OpRethDbProvider>,
-        (),
-        (),
-        reth_optimism_evm::tx::OpTxEnvConverter
+        BaseTxInfoMapper<BaseRethDbProvider>
     >
 >;
-type OpRethFilter = EthFilter<OpRethApi>;
-type OpRethTrace = TraceApi<OpRethApi>;
-type OpRethDebug = DebugApi<OpRethApi>;
-type OpRethTxPool = Pool<
-    TransactionValidationTaskExecutor<OpTransactionValidator<OpRethDbProvider, OpPooledTransaction, OpEvmConfig>>,
-    CoinbaseTipOrdering<OpPooledTransaction>,
+type BaseRethFilter = EthFilter<BaseRethApi>;
+type BaseRethTrace = TraceApi<BaseRethApi>;
+type BaseRethDebug = DebugApi<BaseRethApi>;
+type BaseRethTxPool = Pool<
+    TransactionValidationTaskExecutor<BaseTransactionValidator<BaseRethDbProvider, BasePooledTransaction, BaseEvmConfig>>,
+    CoinbaseTipOrdering<BasePooledTransaction>,
     NoopBlobStore
 >;
 
-type OpRethDbProvider = BlockchainProvider<NodeTypesWithDBAdapter<OpNode, Arc<DatabaseEnv>>>;
+type BaseRethDbProvider = BlockchainProvider<NodeTypesWithDBAdapter<BaseNode, Arc<DatabaseEnv>>>;
 
-impl NodeClientSpec for OpNode {
-    type Api = OpRethApi;
-    type DbProvider = OpRethDbProvider;
-    type Debug = OpRethDebug;
-    type Filter = OpRethFilter;
-    type Trace = OpRethTrace;
-    type TxPool = OpRethTxPool;
+impl NodeClientSpec for BaseNode {
+    type Api = BaseRethApi;
+    type DbProvider = BaseRethDbProvider;
+    type Debug = BaseRethDebug;
+    type Filter = BaseRethFilter;
+    type Trace = BaseRethTrace;
+    type TxPool = BaseRethTxPool;
 
     fn new_with_db<Ext>(
         db_config: DbConfig,
@@ -94,11 +89,11 @@ impl NodeClientSpec for OpNode {
 
         let blockchain_provider = BlockchainProvider::new(provider_factory.clone())?;
 
-        let evm_config = OpEvmConfig::optimism(chain_spec.clone());
+        let evm_config = BaseEvmConfig::base(chain_spec.clone());
 
         let transaction_validator = EthTransactionValidatorBuilder::new(blockchain_provider.clone(), evm_config.clone())
             .build_with_tasks(task_executor.clone(), NoopBlobStore::default())
-            .map(OpTransactionValidator::new);
+            .map(BaseTransactionValidator::new);
 
         let tx_pool = Pool::new(
             transaction_validator,
@@ -107,16 +102,16 @@ impl NodeClientSpec for OpNode {
             PoolConfig::default()
         );
 
-        let rpc_converter = RpcConverter::new(OpReceiptConverter::new(blockchain_provider.clone()))
-            .with_mapper(OpTxInfoMapper::new(blockchain_provider.clone()))
-            .with_tx_env_converter(reth_optimism_evm::tx::OpTxEnvConverter);
+        let base_time = BaseTimeCache::default();
+        let rpc_converter = RpcConverter::new(BaseReceiptConverter::new(blockchain_provider.clone(), base_time.clone()))
+            .with_mapper(BaseTxInfoMapper::new(blockchain_provider.clone(), base_time.clone()));
 
         let eth_api_inner =
             EthApi::builder(blockchain_provider.clone(), tx_pool.clone(), NoopNetwork::default(), evm_config)
                 .task_spawner(task_executor.clone())
                 .with_rpc_converter(rpc_converter)
                 .build_inner();
-        let api = OpEthApi::new(eth_api_inner, None, U256::from(1_000_000u64), None);
+        let api = BaseEthApi::new(eth_api_inner, None, U256::from(1_000_000u64), base_time);
 
         let tracing_call_guard = BlockingTaskGuard::new(max_tasks);
         let trace = TraceApi::new(api.clone(), tracing_call_guard.clone(), EthConfig::default());
@@ -137,17 +132,18 @@ impl NodeClientSpec for OpNode {
     }
 }
 
-pub fn get_op_superchain_spec(str: &str) -> Arc<OpChainSpec> {
-    reth_optimism_chainspec::generated_chain_value_parser(str).unwrap()
+pub fn get_base_chain_spec(str: &str) -> Arc<BaseChainSpec> {
+    BaseChainSpec::parse_chain(str).unwrap()
 }
 
 #[cfg(all(test, not(feature = "ci")))]
 mod tests {
     use alloy_rpc_types::Filter;
     use eth_network_exts::base_mainnet::BaseMainnetExt;
-    use reth_optimism_chainspec::BASE_MAINNET;
 
-    use crate::{reth_libmdbx::RethNodeClientBuilder, test_utils::stream_timeout, traits::EthStream};
+    use crate::{
+        base_reth::BASE_MAINNET, reth_libmdbx::RethNodeClientBuilder, test_utils::stream_timeout, traits::EthStream
+    };
 
     const BASE_MAINNET_DB_PATH: &str = "/var/lib/eth/base-mainnet/reth/";
     const BASE_MAINNET_IPC_PATH: &str = "/tmp/reth-base-mainnet.ipc";

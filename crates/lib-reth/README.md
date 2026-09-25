@@ -4,7 +4,7 @@ Unified interface for connecting to and interacting with Reth nodes.
 
 ## Overview
 
-This crate provides a comprehensive library for connecting to Ethereum endpoints using Reth, supporting both Ethereum mainnet and Optimism L2 networks.
+This crate provides a comprehensive library for connecting to Ethereum endpoints using Reth, supporting both Ethereum mainnet and Base.
 
 ## Connection Types
 
@@ -17,7 +17,7 @@ This crate provides a comprehensive library for connecting to Ethereum endpoints
 
 - `full` - All connection types and integrations
 - `revm` - REVM execution support
-- `op-reth-db` - Optimism node support
+- `base-reth-db` - Base node support
 - `rayon` - Parallel execution support
 
 ## Supported Functionality

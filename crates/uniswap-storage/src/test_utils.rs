@@ -1,7 +1,7 @@
 use alloy_network::Network;
 use alloy_primitives::{Address, address};
 use alloy_provider::{Provider, ProviderBuilder, RootProvider, WsConnect};
-use op_alloy_network::Optimism;
+use base_common_network::Base;
 
 pub async fn eth_provider() -> RootProvider {
     __eth_provider("ETH_WS_URL").await
@@ -20,7 +20,7 @@ async fn __eth_provider<N: Network>(env: &str) -> RootProvider<N> {
         .clone()
 }
 
-pub async fn eth_base_provider() -> RootProvider<Optimism> {
+pub async fn eth_base_provider() -> RootProvider<Base> {
     __eth_provider("BASE_WS_URL").await
 }
 
