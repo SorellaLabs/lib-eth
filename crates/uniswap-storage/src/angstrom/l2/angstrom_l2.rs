@@ -348,9 +348,9 @@ mod test {
         v4::{UNISWAP_V4_CONSTANTS_BASE_MAINNET, pool_manager::pool_state::pool_manager_pool_slot0}
     };
 
-    const HOOK_ADDRESS: Address = address!("0x7Fa49D29481b6D168505Ccde26635e204c09e5CF");
-    const POOL_ID: B256 = b256!("0xd12d3ba76b3dccd9a551f5186771d9d4fed28a6612beb007f322a816f91a2e7a");
-    const BLOCK_NUMBER: u64 = 44600000;
+    const HOOK_ADDRESS: Address = address!("0x9ABccA2Ee3dfbFb79C9C8EF11C77655DcA1365CF");
+    const POOL_ID: B256 = b256!("0x20da03c6c1a9bb4f74bf9e911689faef9e7297f83d06f3df2b2cee5891d4cf36");
+    const BLOCK_NUMBER: u64 = 51784313;
 
     #[tokio::test]
     async fn test_angstrom_l2_pool_keys_stream() {
@@ -418,7 +418,7 @@ mod test {
             .await
             .unwrap();
 
-        assert_eq!(result, U256::from_str_radix("27434346655209874526444290880258435529694", 10).unwrap());
+        assert_eq!(result, U256::from_str_radix("10063786968568044944718670563773995076858", 10).unwrap());
     }
 
     #[tokio::test]
@@ -459,7 +459,7 @@ mod test {
         .await
         .unwrap();
 
-        assert_eq!(result, U256::from_str_radix("27434346655209874526444290880258435529694", 10).unwrap());
+        assert_eq!(result, U256::from_str_radix("10063786968568044944718670563773995076858", 10).unwrap());
     }
 
     #[tokio::test]
@@ -467,11 +467,7 @@ mod test {
         let provider = eth_base_provider().await;
 
         let uni_consts = ANGSTROM_L2_CONSTANTS_BASE_MAINNET.uniswap_constants();
-        let slot0 = pool_manager_pool_slot0(&provider, uni_consts.pool_manager(), POOL_ID, BlockId::number(BLOCK_NUMBER))
-            .await
-            .unwrap();
-
-        let token_id = U256::from(1970005);
+        let token_id = U256::from(3086526);
 
         let result = angstrom_l2_last_growth_inside(
             &provider,
@@ -479,8 +475,8 @@ mod test {
             uni_consts.position_manager(),
             POOL_ID,
             token_id,
-            slot0.tick - I24::unchecked_from(1000),
-            slot0.tick + I24::unchecked_from(1000),
+            I24::unchecked_from(-267660),
+            I24::unchecked_from(-262440),
             BlockId::number(BLOCK_NUMBER)
         )
         .await
