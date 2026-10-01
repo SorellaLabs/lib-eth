@@ -147,8 +147,8 @@ pub async fn next_initialized_tick_within_one_word<F: StorageSlotFetcher>(
 fn most_significant_bit(x: U256) -> u8 {
     assert!(x > U256::ZERO, "x must be greater than 0");
 
-    // Use U256's leading_zeros method and convert to most significant bit position
-    // U256 has 256 bits, so MSB position = 255 - leading_zeros
+    // Use U256's leading_zeros method and convert to most significant bit
+    // position U256 has 256 bits, so MSB position = 255 - leading_zeros
     255 - (x.leading_zeros() as u8)
 }
 

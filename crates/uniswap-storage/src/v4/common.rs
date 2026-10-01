@@ -190,8 +190,8 @@ mod tests {
     #[test]
     fn test_unpack_slot0() {
         // Test case with known values
-        // Layout: 24 bits empty | 24 bits lpFee | 12 bits protocolFee 1->0 | 12 bits
-        // protocolFee 0->1 | 24 bits tick | 160 bits sqrtPriceX96
+        // Layout: 24 bits empty | 24 bits lpFee | 12 bits protocolFee 1->0 | 12
+        // bits protocolFee 0->1 | 24 bits tick | 160 bits sqrtPriceX96
 
         let sqrt_price = U160::from(494855076077838290493259198064540312_u128);
         let tick = I24::unchecked_from(100);
