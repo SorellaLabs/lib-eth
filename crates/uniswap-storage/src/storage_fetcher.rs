@@ -110,7 +110,7 @@ mod reth_db_impls {
 
     #[cfg(feature = "l2-angstrom")]
     #[async_trait::async_trait]
-    impl<N, Rpc> StorageSlotFetcher for reth_optimism_rpc::OpEthApi<N, Rpc>
+    impl<N, Rpc> StorageSlotFetcher for base_execution_rpc::BaseEthApi<N, Rpc>
     where
         N: RpcNodeCore,
         Rpc: RpcConvert

@@ -21,20 +21,6 @@ reth-tasks = { workspace = true, optional = true }
 reth-network-api = { workspace = true, optional = true }
 reth-node-ethereum = { workspace = true, optional = true }
 reth-chainspec = { workspace = true, optional = true }
-reth-optimism-chainspec = { workspace = true, optional = true, features = [
-    "serde",
-    "superchain-configs",
-
-] }
-reth-optimism-node = { workspace = true, optional = true }
-reth-optimism-evm = { workspace = true, optional = true }
-reth-optimism-rpc = { workspace = true, optional = true }
-reth-optimism-primitives = { workspace = true, optional = true, features = [
-    "serde",
-    "serde-bincode-compat",
-    "reth-codec",
-    "alloy-compat",
-] }
 reth-db = { workspace = true, optional = true, default-features = false, features = [
     "mdbx",
 ] }
@@ -45,6 +31,17 @@ reth-node-types = { workspace = true, optional = true }
 reth-evm = { workspace = true, optional = true }
 uniswap-storage = { workspace = true, optional = true }
 eth-network-exts.workspace = true
+
+# base
+base-node-core = { workspace = true, optional = true }
+base-execution-chainspec = { workspace = true, optional = true }
+base-execution-evm = { workspace = true, optional = true }
+base-execution-rpc = { workspace = true, optional = true }
+base-execution-txpool = { workspace = true, optional = true }
+base-common-consensus = { workspace = true, optional = true }
+base-common-rpc-types = { workspace = true, optional = true }
+base-common-network = { workspace = true, optional = true }
+base-common-evm = { workspace = true, optional = true }
 
 # alloy
 alloy-provider = { workspace = true, default-features = false, features = [
@@ -64,8 +61,6 @@ alloy-rpc-types = { workspace = true, default-features = false, features = [
 ] }
 alloy-primitives = { workspace = true, default-features = false }
 alloy-eips = { workspace = true, optional = true }
-op-alloy-network = { workspace = true, optional = true }
-op-alloy-consensus = { workspace = true, optional = true }
 
 
 # revm
@@ -73,7 +68,6 @@ revm.workspace = true
 revm-database = { workspace = true, default-features = false, features = [
     "alloydb",
 ] }
-op-revm = { workspace = true, optional = true }
 
 # async
 tokio = { workspace = true, features = ["full"] }
@@ -92,7 +86,7 @@ serial_test.workspace = true
 
 [features]
 default = ["full"]
-full = ["mainnet-full", "op-full", "ipc", "ws", "uniswap-storage"]
+full = ["mainnet-full", "base-full", "ipc", "ws", "uniswap-storage"]
 
 
 ipc = []
@@ -100,11 +94,13 @@ ws = []
 
 
 mainnet-full = ["revm", "reth-db"]
-op-full = ["op-revm", "op-reth-db"]
+base-full = ["base-revm", "base-reth-db"]
+# kept as an alias so downstream crates that enable `lib-reth/op-full` build unchanged
+op-full = ["base-full"]
 
 
 revm = ["dep:alloy-eips", "dep:reth-revm", "dep:reth-evm"]
-op-revm = ["revm", "dep:op-revm", "dep:op-alloy-network"]
+base-revm = ["revm", "dep:base-common-evm"]
 
 
 reth-db = [
@@ -118,19 +114,19 @@ reth-db = [
     "dep:reth-rpc-eth-types",
     "dep:reth-db",
     "dep:reth-node-types",
-    "dep:reth-optimism-primitives",
     "dep:reth-storage-api",
     "dep:reth-rpc-eth-api",
 ]
-op-reth-db = [
+base-reth-db = [
     "reth-db",
-    "dep:reth-optimism-chainspec",
-    "dep:reth-optimism-primitives",
-    "dep:reth-optimism-node",
-    "dep:reth-optimism-evm",
-    "dep:reth-optimism-rpc",
-    "dep:op-alloy-network",
-    "dep:op-alloy-consensus",
+    "dep:base-node-core",
+    "dep:base-execution-chainspec",
+    "dep:base-execution-evm",
+    "dep:base-execution-rpc",
+    "dep:base-execution-txpool",
+    "dep:base-common-consensus",
+    "dep:base-common-rpc-types",
+    "dep:base-common-network",
     "uniswap-storage/l2-angstrom",
     "eth-network-exts/l2",
 ]

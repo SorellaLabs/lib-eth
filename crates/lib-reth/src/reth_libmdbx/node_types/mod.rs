@@ -10,9 +10,9 @@ use reth_rpc_eth_api::{EthApiTypes, FullEthApiServer, RpcNodeCore, helpers::Full
 
 use crate::{reth_libmdbx::DbConfig, traits::EthStream};
 
+#[cfg(feature = "base-reth-db")]
+pub mod base_node;
 pub mod node;
-#[cfg(feature = "op-reth-db")]
-pub mod op_node;
 
 pub(crate) fn provider_runtime() -> eyre::Result<reth_tasks::Runtime> {
     match tokio::runtime::Handle::try_current() {
